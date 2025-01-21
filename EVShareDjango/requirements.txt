@@ -1,0 +1,6 @@
+asgiref @ file:///C:/b/abs_ae1n0p_8_w/croot/asgiref_1724072476516/work
+Django==5.1.2
+django-extensions==3.2.3
+pillow==11.0.0
+sqlparse @ file:///C:/b/abs_88361ub_qu/croot/sqlparse_1690904577514/work
+tzdata @ file:///croot/python-tzdata_1690578112552/work

@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}Welcome to EVShare {% endblock %}
+
+{% block main %}
+<h1>Wecome to EVShare System</h1>
+<form method="POST" action="/login/">
+    <input type="hidden" name="csrfmiddlewaretoken" value={{ csrf_token }}>
+    <table>
+        <tr>
+            <td><label>User Type:</label></td>
+            <td>
+                <input type="radio" class="btn-check" id="btn-check-outlined" autocomplete="off"  name="userType" value="CS" checked>
+                <label class="btn btn-outline-primary" for="btn-check-outlined">Customer</label>
+                <input type="radio" class="btn-check" id="btn-check-outlined_" autocomplete="off"  name="userType" value="OP">
+                <label class="btn btn-outline-primary" for="btn-check-outlined_">Operator</label>
+                <input type="radio" class="btn-check" id="btn-check-outlined__" autocomplete="off"  name="userType" value="MN">
+                <label class="btn btn-outline-primary" for="btn-check-outlined__">Manager</label>
+            </td>
+        </tr>
+        <tr>
+            <td><label for="id_username">Account:</label></td>
+            <td><input type="text" name="username" maxlength="20" minlength="2" required="" id="id_username"></td>
+        </tr>
+        <tr>
+            <td><label for="id_password">Password:</label></td>
+            <td><input type="password" name="password" required="" id="id_password"></td>
+        </tr>
+        <tr>
+            <td>
+                <label for="remember">Remember me:</label>
+                <input type="checkbox" id="remember" name="remember" value="1">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <button type="submit">Log in</button>
+            </td>
+            <td><a href="/login/register/">Register</a></td>
+        </tr>
+        <tr>
+            <div>
+                {% if form.username.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.username.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        </tr>
+    </table>
+</form>
+{% endblock %}

@@ -1,0 +1,105 @@
+<!-- profile.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block main %}
+    <style>
+        .background {
+            background-image: url('{% static "image/profile.jpg" %}');
+            background-size: cover;
+            background-position: center; /* 背景图居中 */
+            position: relative;
+            height: 100vh; /* 使其占满全屏高度 */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .overlay {
+            position: absolute; /* 绝对定位覆盖层 */
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.1); /* 半透明黑色 */
+            z-index: 1; /* 确保覆盖层在上方 */
+        }
+
+        .container {
+            position: relative; /* 使容器相对定位，确保内容在覆盖层之上 */
+            z-index: 2; /* 确保内容高于覆盖层 */
+            color: navy; /* 设置文字颜色为白色 */
+            text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.7);
+
+        }
+
+        .row {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .profile-img {
+            max-width: 600px;
+            max-height: 600px;
+            border-radius: 50%;
+            margin-bottom: 20px;
+        }
+
+        .balance-info {
+            margin-top: 30px;
+            font-size: 1.5em;
+        }
+
+        h2 {
+            font-size: 2em; /* 标题字体大小 */
+        }
+    </style>
+    <div class="background">
+    <div class="container mt-5">
+        <h2>Profile</h2>
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-4 text-center">
+                    {% if user.image %}
+                        <img src="{{ user.image.url }}" class="img-thumbnail profile-img" alt="Profile Picture"
+                             style="max-width: 300px;">
+                    {% else %}
+                        <img src="{% static '/image/default_avatar.png' %}" class="img-thumbnail profile-img"
+                             alt="Default Profile Picture"
+                             style="max-width: 300px;">
+                    {% endif %}
+                    <div class="form-group mt-3">
+                        <label for="image">Upload New Avatar</label>
+                        {{ form.image }}
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="form-group balance-info">
+                        <label style="font-size: 1.5em;" for="balance">Balance</label>
+                        <span id="balance">{{ user.balance|floatformat:2}}</span>
+                    </div>
+                    <div class="form-group">
+                        <label style="font-size: 1.5em;" for="surname">Surname</label>
+                        {{ form.surname }}
+                    </div>
+                    <div class="form-group">
+                        <label style="font-size: 1.5em;" for="firstname">First Name</label>
+                        {{ form.firstname }}
+                    </div>
+                    <div class="form-group">
+                        <label style="font-size: 1.5em;" for="telephone">Telephone</label>
+                        {{ form.telephone }}
+                    </div>
+                    <div class="form-group">
+                        <label style="font-size: 1.5em;" for="email">Email</label>
+                        {{ form.email }}
+                    </div>
+                    <br>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    </div>
+{% endblock %}

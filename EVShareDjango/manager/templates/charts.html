@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <style>
+        /* 添加背景样式 */
+        body {
+            background-image: url('{% static "image/back.jpg" %}'); /* 背景图片 */
+            background-size: cover; /* 背景图片覆盖整个区域 */
+            background-position: center; /* 背景居中 */
+            background-repeat: no-repeat; /* 不重复背景图片 */
+        }
+    </style>
+    <script src="{% static 'js/echarts.js' %}"></script>
+    <script>
+
+        function showChart(chartId) {
+            document.querySelectorAll('.chart').forEach(chart => chart.style.display = 'none');
+            document.getElementById(chartId).style.display = 'block';
+        }
+
+        function fetchDataAndRenderChart(apiUrl, chartId, title, labelKey, dataKey) {
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    const labels = data.map(item => item[labelKey]);
+                    const values = data.map(item => item[dataKey]);
+
+                    const chartDom = document.getElementById(chartId);
+                    const chart = echarts.init(chartDom);
+
+                    const options = {
+                        title: {
+                            text: title,
+                            left: 'center'
+                        },
+                        tooltip: {
+                            trigger: 'axis'
+                        },
+                        xAxis: {
+                            type: 'category',
+                            data: labels
+                        },
+                        yAxis: {
+                            type: 'value'
+                        },
+                        series: [{
+                            data: values,
+                            type: 'bar',
+                            itemStyle: {
+                                color: '#5470C6'
+                            }
+                        }]
+                    };
+
+                    chart.setOption(options);
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        }
+
+
+        let currentActiveLink = null;
+
+        function setActiveLink(element) {
+            if (currentActiveLink) {
+                currentActiveLink.classList.remove('active');
+            }
+            currentActiveLink = element;
+            currentActiveLink.classList.add('active');
+        }
+
+
+        function updateCharts() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            if (!currentActiveLink) {
+                alert("Please select a chart from the sidebar.");
+                return;
+            }
+
+            let chartId, apiUrl, chartTitle, labelX, labelY;
+
+            switch (currentActiveLink.textContent.trim()) {
+                case "Money Earned per Location":
+                    chartId = "moneyEarnedChart";
+                    apiUrl = `/manager/money-earned-per-location/?start_date=${startDate}&end_date=${endDate}`;
+                    chartTitle = "Money Earned per Location";
+                    labelX = "location";
+                    labelY = "total_earned";
+                    break;
+
+                case "Cars per Location":
+                    alert("This chare cannot be filtered.");
+                    break;
+
+                case "Most Reported Broken Cars":
+                    alert("This chare cannot be filtered.");
+                    break;
+
+                case "Most Used Rental Location":
+                    chartId = "rentalLocationChart";
+                    apiUrl = `/manager/most-used-rental-location/?start_date=${startDate}&end_date=${endDate}`;
+                    chartTitle = "Most Used Rental Location";
+                    labelX = "location";
+                    labelY = "rental_count";
+                    break;
+
+                case "Most Rented Vehicle Types":
+                    chartId = "vehicleTypeChart";
+                    apiUrl = `/manager/most-rented-vehicle-types/?start_date=${startDate}&end_date=${endDate}`;
+                    chartTitle = "Most Rented Vehicle Types";
+                    labelX = "vehicle_type";
+                    labelY = "rental_count";
+                    break;
+
+                default:
+                    alert("Invalid chart selected.");
+                    return;
+            }
+
+            showChart(chartId);
+            fetchDataAndRenderChart(apiUrl, chartId, chartTitle, labelX, labelY);
+        }
+
+    </script>
+
+{% endblock %}
+
+{% block main %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/manager.css' %}">
+    <div class="date-filters">
+
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block sidebar" style="background-color: #5470c6;">
+                <div class="position-sticky pt-3">
+                    <h5 class="sidebar-heading px-3 mt-4 mb-1 text-muted" style="display: flex; align-items: center; justify-content: center;">Dashboard</h5>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="#"
+                               onclick="setActiveLink(this); showChart('moneyEarnedChart'); fetchDataAndRenderChart('/manager/money-earned-per-location/', 'moneyEarnedChart', 'Money Earned per Location', 'location', 'total_earned')">
+                                <img src="{% static 'image/money_icon.png' %}" alt="Money Icon" class="nav-icon">
+                                Money Earned per Location
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#"
+                               onclick="setActiveLink(this); showChart('carsPerLocationChart'); fetchDataAndRenderChart('/manager/cars-per-location/', 'carsPerLocationChart', 'Number of Cars per Location', 'location', 'total_cars')">
+                                <img src="{% static 'image/cars_icon.png' %}" alt="Cars Icon" class="nav-icon">
+                                Cars per Location
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#"
+                               onclick="setActiveLink(this); showChart('brokenCarsChart'); fetchDataAndRenderChart('/manager/most-reported-broken-cars/', 'brokenCarsChart', 'Most Reported Broken Cars', 'vehicle_id', 'report_count')">
+                                <img src="{% static 'image/broken_car_icon.png' %}" alt="Broken Car Icon" class="nav-icon">
+                                Most Reported Broken Cars
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#"
+                               onclick="setActiveLink(this); showChart('rentalLocationChart'); fetchDataAndRenderChart('/manager/most-used-rental-location/', 'rentalLocationChart', 'Most Used Rental Location', 'location', 'rental_count')">
+                                <img src="{% static 'image/location_icon.png' %}" alt="Location Icon" class="nav-icon">
+                                Most Used Rental Location
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#"
+                               onclick="setActiveLink(this); showChart('vehicleTypeChart'); fetchDataAndRenderChart('/manager/most-rented-vehicle-types/', 'vehicleTypeChart', 'Most Rented Vehicle Types', 'vehicle_type', 'rental_count')">
+                                <img src="{% static 'image/vehicle_type_icon.png' %}" alt="Vehicle Type Icon" class="nav-icon">
+                                Most Rented Vehicle Types
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main content area -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="chart-container mt-4">
+                    <h2 id="chartTitle" class="text-center">Data Visualization Dashboard</h2>
+                    <div class="date-filters">
+                        <label for="startDate">Start Date:</label>
+                        <input type="date" id="startDate">
+
+                        <label for="endDate">End Date:</label>
+                        <input type="date" id="endDate">
+
+                        <button onclick="updateCharts()">Filter Data</button>
+                    </div>
+
+                    <div id="moneyEarnedChart" class="chart" style="width: 100%; height: 400px; display: none;"></div>
+                    <div id="carsPerLocationChart" class="chart"
+                         style="width: 100%; height: 400px; display: none;"></div>
+                    <div id="brokenCarsChart" class="chart" style="width: 100%; height: 400px; display: none;"></div>
+                    <div id="rentalLocationChart" class="chart"
+                         style="width: 100%; height: 400px; display: none;"></div>
+                    <div id="vehicleTypeChart" class="chart" style="width: 100%; height: 400px; display: none;"></div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+
+
+{% endblock %}

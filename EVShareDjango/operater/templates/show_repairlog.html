@@ -1,0 +1,256 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/formPopovers.css' %}">
+    <style>
+        /* 页面背景图片 */
+        body {
+            background-image: url("{% static 'image/car5.jpg' %}") !important;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            margin: 0;
+        }
+
+        /* 半透明背景样式 */
+        .semi-transparent-bg {
+            background-color: rgba(255, 255, 255, 0.7) !important; /* 白色半透明 */
+            padding: 20px;
+            border-radius: 8px;
+            position: relative; /* 确保定位有效 */
+            z-index: 1; /* 提高 z-index */
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 表格的半透明背景 */
+        .semi-transparent-bg table {
+            background-color: rgba(255, 255, 255, 0.6) !important; /* 表格区域的背景半透明 */
+            border-collapse: collapse; /* 合并边框 */
+            width: 100%; /* 确保表格宽度 */
+        }
+
+        /* 表格的边框和行样式 */
+        .table th, .table td {
+            border: 1px solid rgba(0, 0, 0, 0.1) !important; /* 半透明边框 */
+            padding: 10px; /* 增加内边距 */
+        }
+
+        /* 头部的半透明效果 */
+        .thead-dark th {
+            background-color: rgba(176, 224, 230, 0.8) !important; /* 使用 rgba 添加透明度 */
+            color: white;
+        }
+
+        .container {
+            background: transparent !important; /* 使容器背景透明 */
+        }
+    </style>
+{% endblock %}
+
+
+
+
+{% block main %}
+    <script>
+        function openPopupRepair(vehicleId) {
+            const popup_repair = document.getElementById('popup_repair');
+            const overlay = document.getElementById('overlay');
+
+            fetch(`/operater/vehicle/repair?vehicleId=${vehicleId}`)
+                .then(response => response.json())
+                .then(data => {
+                    // 将返回的信息存储到变量中
+                    if (data.error) {
+                        console.error(data.error);
+                        alert(data.error);
+                        return;
+                    }
+                    const malfunctionType = data.malfunctionType;
+                    const reportDate = data.reportDate;
+                    const customerId = data.customerId;
+                    const vehicleId = data.vehicleId
+                    const description = data.description;
+                    const operator = data.operator;
+                    const fixed = data.Fixed;
+                    const repairDate = data.repairDate;
+                    document.getElementById('reportedDate').value = new Date(reportDate).toISOString().slice(0, -8);
+                    document.getElementById('malfunctionType').value = malfunctionType;
+                    document.getElementById('customer').value = customerId;
+                    document.getElementById('vehicle').value = vehicleId;
+                    document.getElementById('description').value = description;
+                    document.getElementById('operator').value = operator;
+                    document.getElementById('Fixed').checked = fixed;
+                    if (repairDate) {
+                        document.getElementById('repairDate').value = new Date(repairDate).toISOString().slice(0, -8);
+                    }
+                    popup_repair.style.display = 'block';
+                    overlay.style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error fetching repair data:', error);
+                    alert('Error fetching repair data:', error);
+                });
+
+
+        }
+
+        function Closebtn() {
+            const popup_repair = document.getElementById('popup_repair');
+            const overlay = document.getElementById('overlay');
+            popup_repair.style.display = 'none';
+            overlay.style.display = 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var semiTransparentBg = document.querySelector('.semi-transparent-bg');
+            if (semiTransparentBg) {
+                semiTransparentBg.style.backgroundColor = 'rgba(255, 255, 255, 0.7)';
+            }
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const messages = document.querySelectorAll('.messages li');
+            messages.forEach(function (message) {
+                alert(message.textContent);
+            });
+        });
+    </script>
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li class="{{ message.tags }}" style="display: none">{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <div style="position: relative; z-index: 1;">
+        <div class="container mt-4">
+
+            <!-- 标题部分 -->
+            <h1 class="mb-4 text-center" style="color: #333;">REPAIR LOGS</h1>
+
+            <!-- 搜索框部分 -->
+            <form method="GET" class="mb-4">
+                <div class="input-group">
+                    <input type="text" name="customer" class="form-control" placeholder="Search by Customer Name"
+                           value="{{ customer_username }}">
+                    <input type="text" name="vehicle" class="form-control" placeholder="Search by Vehicle ID"
+                           value="{{ vehicle_id }}">
+                    <button class="btn btn-primary" type="submit">Search</button>
+                </div>
+            </form>
+
+            <!-- 表格部分 -->
+            <div class="semi-transparent-bg p-3 rounded" style="background-color: rgba(255,255,255,0.5);">
+                <table class="table table-bordered">
+                    <thead class="thead-dark">
+                    <tr style="background-color:rgba(176, 224, 230, 0.8);"> <!-- 使用薄荷蓝色 -->
+                        <th scope="col" style="background-color: #b0e0e6; color: white">#</th>
+                        <th scope="col" style="background-color: #b0e0e6; color: white;">Customer</th>
+                        <th scope="col" style="background-color: #b0e0e6; color: white;">Vehicle</th>
+                        <th scope="col" style="background-color: #b0e0e6; color: white;">Report Date</th>
+                        <th scope="col" style="background-color: #b0e0e6; color: white;">Description</th>
+                        <th scope="col" style="background-color: #b0e0e6; color: white;">Repair Date</th>
+                        <th scope="col" style="background-color: #b0e0e6; color: white;">Operator</th>
+                        <th scope="col" style="background-color: #b0e0e6; color: white;">Option</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for log in repair_logs %}
+                        <tr>
+                            <th scope="row">{{ forloop.counter }}</th>
+                            <td>{{ log.customer }}</td>
+                            <td>{{ log.vehicle }}</td>
+                            <td>{{ log.reportDate }}</td>
+                            <td>{{ log.description }}</td>
+                            <td>
+                                {% if log.repairDate %}
+                                    {{ log.repairDate }}
+                                {% else %}
+                                    Haven't repaired yet
+                                {% endif %}
+                            </td>
+                            <td>
+                                {{ log.operator }}
+                            </td>
+                            <td>
+                                {% if not log.fixed %}
+                                    <button id="openbtn_repair" onclick="openPopupRepair({{ log.vehicle }})">Repair
+                                    </button>
+                                {% else %}
+                                    repaired
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6">No rent logs available.</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+    <div style="position: relative; z-index: 2;">
+        <div class="overlay" id="overlay"></div>
+        <div class="popup" id="popup_repair">
+            <form method="POST" action="/operater/vehicle/repair/">
+                <input type="hidden" name="csrfmiddlewaretoken" value={{ csrf_token }}>
+                <input type="hidden" name="locationId" value={{ locationId }}>
+
+                <div>
+                    <label for="reportedDate">Reported Date:</label>
+                    <input type="datetime-local" name="reportedDate" id="reportedDate" value="" readonly>
+                </div>
+
+                <div>
+                    <label for="malfunctionType">Malfunction Type:</label>
+                    <select name="malfunctionType" id="malfunctionType" required>
+                        <option value="ER1">Motor</option>
+                        <option value="ER2">Battery</option>
+                        <option value="ER3">Electronics</option>
+                        <option value="ER4">Cosmetic</option>
+                        <option value="ER5">Brakes</option>
+                        <option value="ER6">Direction</option>
+                        <option value="ER7">Other</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="customer">CustomerID:</label>
+                    <input type="text" name="customer" id="customer" value="" readonly>
+                </div>
+
+                <div>
+                    <label for="vehicle">VehicleID:</label>
+                    <input type="text" name="vehicle" id="vehicle" value="" readonly>
+                </div>
+
+                <div>
+                    <label for="description">Description:</label>
+                    <textarea name="description" id="description" cols="30" rows="10" readonly></textarea>
+                </div>
+
+                <div>
+                    <label for="operator">Operator:</label>
+                    <input type="text" name="operator" id="operator" value="">
+                </div>
+
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" role="switch" id="Fixed" name="Fixed">
+                    <label class="form-check-label" for="Fixed">Fixed</label>
+                </div>
+
+                <div>
+                    <label for="repairDate">Repair Date:</label>
+                    <input type="datetime-local" name="repairDate" id="repairDate">
+                </div>
+                <button type="submit">Submit</button>
+            </form>
+            <br>
+            <button id="closebtn" onclick="Closebtn()">Close</button>
+        </div>
+    </div>
+
+{% endblock %}

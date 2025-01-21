@@ -1,0 +1,38 @@
+/* 导航栏样式 */
+header {
+    background-color: #003366; /* 深色背景 */
+    color: white;
+}
+
+/* 导航链接 */
+.nav-link {
+    color: white;
+    transition: background-color 0.3s ease, color 0.3s ease; /* 平滑过渡 */
+}
+
+.nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1); /* 悬停时的背景色 */
+    color: #DAA520 !important; /* 悬停时的文字颜色 */
+}
+
+/* 按钮样式 */
+.btn-outline-light {
+    border-color: rgba(255, 255, 255, 0.5); /* 边框颜色 */
+}
+
+.btn-outline-light:hover {
+    background-color: rgba(255, 255, 255, 0.1); /* 悬停时的背景色 */
+    color: #DAA520 !important; /* 悬停时的文字颜色 */
+}
+
+/* 增加间距 */
+.nav li {
+    margin-right: 35px; /* 导航项之间的间距 */
+}
+
+/* 响应式设计调整 */
+@media (max-width: 768px) {
+    .nav li {
+        margin-right: 10px; /* 小屏幕下的间距调整 */
+    }
+}

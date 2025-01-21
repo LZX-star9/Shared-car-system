@@ -1,0 +1,12 @@
+/* static/css/manager.css */
+.nav-icon {
+    width: 20px;       /* 控制图片宽度 */
+    height: 20px;      /* 控制图片高度 */
+    margin-right: 2px; /* 图片和文字之间的间距 */
+}
+
+.sidebar-heading {
+    font-size: 28px;      /* 调整字体大小 */
+    color: white;       /* 设置字体颜色 */
+    font-weight: bold;    /* 可选：加粗字体 */
+}

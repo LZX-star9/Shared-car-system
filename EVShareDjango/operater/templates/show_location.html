@@ -1,0 +1,269 @@
+{% extends 'base.html' %}
+
+{% block title %}View Location{% endblock %}
+
+{% block head %}
+    <style>
+        /* 添加背景样式 */
+        body {
+            background-image: url('{% static "image/back.jpg" %}'); /* 背景图片 */
+            background-size: cover; /* 背景图片覆盖整个区域 */
+            background-position: center; /* 背景居中 */
+            background-repeat: no-repeat; /* 不重复背景图片 */
+        }
+    </style>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBqiVu0q8eThnZgTMriejFL9Qj1T1hgALI&callback=initMap"
+            async defer></script>
+    <script>
+        let map;
+        let selectedMarker;
+        const locations = {{ locations|safe }};
+
+        function initMap() {
+            const glasgow = {lat: 55.8642, lng: -4.2518}; // Glasgow
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: glasgow,
+                zoom: 14,
+            });
+
+            map.addListener("click", (event) => {
+                placeSelectedMarker(event.latLng, {name: "New Location"});
+            });
+
+            locations.forEach(location => {
+                const position = {lat: location.latitude, lng: location.longitude};
+                const marker = new google.maps.Marker({
+                    position: position,
+                    map: map,
+                    title: location.name,
+                });
+
+                const infoWindow = new google.maps.InfoWindow({
+                    content: `<h4>${location.name}</h4>
+                                address:<p>${location.address}</p>
+                                VehicleCount:${location.VehicleCount}<br>
+                                EbikeCount:${location.EBikeCount}<br>
+                                EScooterCount:${location.EScooterCount}`,
+                });
+
+                marker.addListener("click", () => {
+                    infoWindow.open(map, marker);
+                });
+            });
+        }
+
+        function placeSelectedMarker(location, locationData = {}) {
+            if (selectedMarker) {
+                selectedMarker.setMap(null);
+            }
+
+            selectedMarker = new google.maps.Marker({
+                position: location,
+                map: map,
+                icon: {
+                    url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+                }
+            });
+
+            displayLocationInfo(locationData);
+
+        }
+
+        function displayLocationInfo(locationData) {
+            const info = locationData.name ?
+                `Selected Location: ${locationData.name} (ID: ${locationData.id},POST: ${locationData.address})` :
+                "Selected Location: New Location";
+            alert(info);
+        }
+
+        function addVehicle(locationId) {
+            // Show the modal for selecting vehicle type
+            $('#vehicleTypeModal').modal('show');
+
+            $('#cancelButtonadd').click(function () {
+                $('#vehicleTypeModal').modal('hide');
+            });
+
+            // When the user selects a vehicle type, send the request to the server
+            document.getElementById('confirmVehicleType').onclick = function () {
+                const selectedVehicleType = document.querySelector('input[name="vehicleType"]:checked').value;
+                window.location.href = `/operater/add/vehicle?locationId=${locationId}&vehicleType=${selectedVehicleType}`;
+            };
+        }
+
+        function seeVehicle(locationId) {
+            window.location.href = `/operater/show/vehicle?locationId=${locationId}`;
+        }
+
+        function confirmDeletion(locationId) {
+            const userConfirmed = confirm("All information associated with this location will be deleted. Are you sure you want to proceed?");
+            if (userConfirmed) {
+                window.location.href = "/operater/delete/location/" + locationId;
+            }
+        }
+
+        function updateLocation(locationId, locationName, locationAddress) {
+            // Fill the input fields with the current location details
+            document.getElementById('newLocationName').value = locationName;
+            document.getElementById('newLocationAddress').value = locationAddress;
+
+            // Store locationId for later submission
+            window.currentLocationId = locationId;
+
+            document.getElementById('confirmUpdateLocation').addEventListener('click', function () {
+                const locationId = window.currentLocationId;
+                const newLocationName = document.getElementById('newLocationName').value;
+                const newLocationAddress = document.getElementById('newLocationAddress').value;
+
+                // Send the POST request
+                fetch('{% url "operater:update_location" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: new URLSearchParams({
+                        'location_id': locationId,
+                        'newLocationName': newLocationName,
+                        'newLocationAddress': newLocationAddress
+                    })
+                }).then(response => {
+                    if (response.ok) {
+                        location.reload(); // Reload the page on success
+                    } else {
+                        alert("Update failed, please try again.");
+                    }
+                });
+
+                // Hide the modal after submission
+                $('#updateLocationModal').modal('hide');
+            });
+
+            $('#cancelButton').click(function () {
+                $('#updateLocationModal').modal('hide');
+            });
+
+            // Show the modal
+            $('#updateLocationModal').modal('show');
+        }
+
+
+    </script>
+{% endblock %}
+
+
+{% block main %}
+    <div style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
+        <div id="map" style="width: 1000px; height: 500px;"></div>
+        <h3>Location Data Table</h3>
+        <table border="1" class="table table-striped-columns">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Address</th>
+                <th>Latitude</th>
+                <th>Longitude</th>
+                <th>VehicleCount</th>
+                <th>Option</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for location in locations %}
+                <tr>
+                    <td>{{ location.id }}</td>
+                    <td>{{ location.name }}</td>
+                    <td>{{ location.address }}</td>
+                    <td>{{ location.latitude }}</td>
+                    <td>{{ location.longitude }}</td>
+                    <td>{{ location.VehicleCount }}</td>
+                    <td><a class="btn btn-warning btn-sm"
+                           onclick="updateLocation({{ location.id }},'{{ location.name }}','{{ location.address }}')">Update</a>
+                        /<a href="#" class="btn btn-danger btn-sm"
+                            onclick="confirmDeletion({{ location.id }})">Delete</a>
+                        /<a href="#" class="btn btn-info btn-sm" onclick="addVehicle({{ location.id }})">Add vehicle</a>
+                        /<a href="#" class="btn btn-secondary btn-sm" onclick="seeVehicle({{ location.id }})">See
+                            vehicle</a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+
+    <!-- Add this modal anywhere within your HTML file -->
+    <div class="modal fade" id="vehicleTypeModal" tabindex="-1" role="dialog" aria-labelledby="vehicleTypeModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="vehicleTypeModalLabel">Select Vehicle Type</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="vehicleTypeForm">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="vehicleType" id="eScooter"
+                                   value="EScooter" checked>
+                            <label class="form-check-label" for="eScooter">
+                                EScooter
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="vehicleType" id="eBike" value="Ebike">
+                            <label class="form-check-label" for="eBike">
+                                Ebike
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="vehicleType" id="eMotor" value="EMotor">
+                            <label class="form-check-label" for="eMotor">
+                                EMotor
+                            </label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"  id="cancelButtonadd" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="confirmVehicleType">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="updateLocationModal" tabindex="-1" role="dialog"
+         aria-labelledby="updateLocationModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="updateLocationModalLabel">Update Location Information</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="updateLocationForm">
+                        <div class="form-group">
+                            <label for="newLocationName">Location Name</label>
+                            <input type="text" class="form-control" id="newLocationName"
+                                   placeholder="Enter new location name"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="newLocationAddress">Location Address</label>
+                            <input type="text" class="form-control" id="newLocationAddress"
+                                   placeholder="Enter new location address"/>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"  id="cancelButton" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="confirmUpdateLocation">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

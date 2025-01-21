@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block main %}
+<div class="container mt-4">
+
+    <!-- 标题部分 -->
+    <h1 class="mb-4 text-center" style="color: #333;">RENT LOGS</h1>
+
+    <!-- 搜索框部分 -->
+    <form method="GET" class="mb-4">
+        <div class="input-group">
+            <input type="text" name="customer" class="form-control" placeholder="Search by Customer Name" value="{{ customer_username }}">
+            <input type="text" name="vehicle" class="form-control" placeholder="Search by Vehicle ID" value="{{ vehicle_id }}">
+            <button class="btn btn-primary" type="submit">Search</button>
+        </div>
+    </form>
+
+    <!-- 表格部分 -->
+    <div class="semi-transparent-bg p-3 rounded" style="background-color: rgba(255,255,255,0.5);">
+    <table class="table table-bordered">
+        <thead class="thead-dark">
+            <tr style="background-color:rgba(176, 224, 230, 0.8);"> <!-- 使用薄荷蓝色 -->
+                <th scope="col" style="background-color: #b0e0e6; color: white">#</th>
+                <th scope="col" style="background-color: #b0e0e6; color: white;">Customer</th>
+                <th scope="col" style="background-color: #b0e0e6; color: white;">Vehicle</th>
+                <th scope="col" style="background-color: #b0e0e6; color: white;">Start Date</th>
+                <th scope="col" style="background-color: #b0e0e6; color: white;">End Date</th>
+                <th scope="col" style="background-color: #b0e0e6; color: white;">Return Location</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in rent_logs %}
+            <tr>
+                <th scope="row">{{ forloop.counter }}</th>
+                <td>{{ log.customer }}</td>
+                <td>{{ log.vehicle }}</td>
+                <td>{{ log.startDate }}</td>
+                <td>
+                    {% if log.endDate %}
+                        {{ log.endDate }}
+                    {% else %}
+                        Still Renting
+                    {% endif %}
+                </td>
+                <td>
+                    {% if log.returnLocation %}
+                        {{ log.returnLocation }}
+                    {% else %}
+                        Not Returned
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6">No rent logs available.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* 页面背景图片 */
+    body {
+        background-image: url("{% static 'image/car5.jpg' %}") !important;
+        background-size: cover ;
+        background-position: center ;
+        background-attachment: fixed ;
+        margin: 0;
+    }
+
+    /* 半透明背景样式 */
+    .semi-transparent-bg {
+        background-color: rgba(255, 255, 255, 0.7) !important; /* 白色半透明 */
+        padding: 20px;
+        border-radius: 8px;
+        position: relative; /* 确保定位有效 */
+        z-index: 1; /* 提高 z-index */
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    /* 表格的半透明背景 */
+    .semi-transparent-bg table {
+        background-color: rgba(255, 255, 255, 0.6) !important; /* 表格区域的背景半透明 */
+        border-collapse: collapse; /* 合并边框 */
+        width: 100%; /* 确保表格宽度 */
+    }
+/* 表格的边框和行样式 */
+    .table th, .table td {
+        border: 1px solid rgba(0, 0, 0, 0.1) !important; /* 半透明边框 */
+        padding: 10px; /* 增加内边距 */
+    }
+
+    /* 头部的半透明效果 */
+    .thead-dark th {
+        background-color: rgba(176, 224, 230, 0.8) !important; /* 使用 rgba 添加透明度 */
+        color: white ;
+    }
+    .container {
+        background: transparent !important; /* 使容器背景透明 */
+    }
+</style>
+{% endblock %}
+
+
+{% block extra_js %}
+<!-- 引入必要的 JS 文件 -->
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var semiTransparentBg = document.querySelector('.semi-transparent-bg');
+        if (semiTransparentBg) {
+            semiTransparentBg.style.backgroundColor = 'rgba(255, 255, 255, 0.7)';
+        }
+    });
+</script>
+{% endblock %}

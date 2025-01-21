@@ -1,0 +1,285 @@
+{% extends 'base.html' %}
+
+{% block title %}View Location{% endblock %}
+
+{% block head %}
+    <style>
+        /* 添加背景样式 */
+        body {
+            background-image: url('{% static "image/back.jpg" %}'); /* 背景图片 */
+            background-size: cover; /* 背景图片覆盖整个区域 */
+            background-position: center; /* 背景居中 */
+            background-repeat: no-repeat; /* 不重复背景图片 */
+        }
+    </style>
+    <link rel="stylesheet" href="{% static 'css/formPopovers.css' %}">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBqiVu0q8eThnZgTMriejFL9Qj1T1hgALI&callback=initMap"
+            async defer></script>
+    <script>
+        let map;
+        const locations = {{ locations|safe }};
+
+        function initMap() {
+            const glasgow = {lat: 55.8642, lng: -4.2518};
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: glasgow,
+                zoom: 14,
+            });
+
+            locations.forEach(location => {
+                const position = {lat: location.latitude, lng: location.longitude};
+                const marker = new google.maps.Marker({
+                    position: position,
+                    map: map,
+                    title: location.name,
+                });
+
+                // 点击标记显示位置信息
+                const infoWindow = new google.maps.InfoWindow({
+                    content: `<h4>${location.name}</h4>
+                                address:<p>${location.address}</p>
+                                VehicleCount:${location.VehicleCount}<br>
+                                EbikeCount:${location.EBikeCount}<br>
+                                EScooterCount:${location.EScooterCount}<br>
+                                <button onclick="navigateTo(${location.latitude}, ${location.longitude})">
+                                    Navigate Here
+                                </button>`,
+                });
+
+                marker.addListener("click", () => {
+                    infoWindow.open(map, marker);
+                });
+            });
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const userLocation = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude,
+                        };
+
+                        // 在地图上标记用户当前位置
+                        const userMarker = new google.maps.Marker({
+                            position: userLocation,
+                            map: map,
+                            icon: {
+                                url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+                            },
+                            title: "Your Current Location",
+                        });
+
+                        // 将用户位置存储，以便导航使用
+                        window.userLat = userLocation.lat;
+                        window.userLng = userLocation.lng;
+                        // 设置地图中心为用户位置
+                        map.setCenter(userLocation);
+                    },
+                    () => {
+                        alert("Unable to retrieve your location. Please check location settings.");
+                    }
+                );
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        }
+
+        function navigateTo(destLat, destLng) {
+            if (window.userLat !== undefined && window.userLng !== undefined) {
+                const navigationUrl = `https://www.google.com/maps/dir/?api=1&origin=${window.userLat},${window.userLng}&destination=${destLat},${destLng}&travelmode=driving`;
+                window.open(navigationUrl, '_blank');
+            } else {
+                alert("User location not available. Please allow location access.");
+            }
+        }
+
+        // 函数计算并更新时间差
+        function updateTimeDifference(startDate, elementId) {
+            const startTime = new Date(startDate).getTime();
+            setInterval(function () {
+                const now = new Date().getTime();
+                const timeDiff = now - startTime;
+
+                const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+
+                const displayTime = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+
+                document.getElementById(elementId).textContent = displayTime;
+            }, 1000);
+        }
+
+        window.onload = function () {
+            initMap();
+            const rentlogs = [
+                {% for rentlog in rentlogs %}
+                    {
+                        vehicleId: {{ rentlog.vehicleId }},
+                        startDate: "{{ rentlog.startDate }}",
+                        rent_id: {{ rentlog.rent_id }},
+                        energy: {{ rentlog.energy }},
+                    }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ];
+            rentlogs.forEach(rentlog => {
+                const timerelementId = `timer-${rentlog.rent_id}`;
+                updateTimeDifference(rentlog.startDate, timerelementId);
+                const elementId = `energy-${rentlog.rent_id}`;
+                const startDate = new Date(rentlog.startDate);
+                const currentDate = new Date();
+                const minutesElapsed = Math.floor((currentDate - startDate) / (1000 * 60));
+                const energyDecrement = Math.floor(minutesElapsed / 5);
+                rentlog.energy = Math.max(rentlog.energy - energyDecrement, 0);
+                document.getElementById('energy').value = rentlog.energy;
+                document.getElementById(elementId).textContent = `Energy: ${rentlog.energy}`;
+                setInterval(() => {
+                    if (rentlog.energy > 0) {
+                        rentlog.energy -= 1;
+                        document.getElementById(elementId).textContent = `${rentlog.energy}`;
+                        document.getElementById('energy').value = rentlog.energy;
+                    }
+                }, 300000);
+            });
+        };
+
+    </script>
+    <script src="{% static 'js/customer_index.js' %}"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const messages = document.querySelectorAll('.messages li');
+            messages.forEach(function (message) {
+                alert(message.textContent);
+            });
+        });
+    </script>
+{% endblock %}
+
+
+{% block main %}
+    <div style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
+    <div id="map" style="width: 1000px; height: 500px;border: 1px solid black;"></div>
+    </div>
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li class="{{ message.tags }}" style="display: none">{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    {% if rentlogs %}
+        <h3 style="display: flex; justify-content: center;align-items: center">IS RENTING</h3>
+        <div class="row" style="display: flex; justify-content: center;align-items: center">
+            {% for rentlog in rentlogs %}
+                <div class="col-sm-6">
+                    <div class="card">
+                        <h5 class="card-header d-flex justify-content-between">
+                            <span>Vehicle ID: {{ rentlog.vehicleId }}</span>
+                            <span>Type: {{ rentlog.vehicleType }}</span>
+                        </h5>
+                        <div class="card-body">
+                            <h5 class="card-title">Start Time: {{ rentlog.starttime }}</h5>
+                            <p class="card-text">
+                                <br>Time Elapsed: <span id="timer-{{ rentlog.rent_id }}"></span>
+                                <br>Cost: 0.02£ per minute
+                                <br>remaining energy: <span id="energy-{{ rentlog.rent_id }}"></span>%
+                                <br> 1% power every 5 min
+                            </p>
+                            <button class="btn btn-primary" id="openbtn_return"
+                                    onclick="openPopupReturn({{ rentlog.vehicleId }})">Return the vehivle
+                            </button>
+                            <button class="btn btn-primary" id="openbtn_report"
+                                    onclick="openPopupReport({{ rentlog.vehicleId }})">Report Problem
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    <h3>Location Data Table</h3>
+    <table border="1" class="table table-striped-columns">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Address</th>
+            <th>EBikeCount</th>
+            <th>EScooterCount</th>
+            <th>Sum</th>
+            <th>Option</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for location in locations %}
+            <tr>
+                <td>{{ location.id }}</td>
+                <td>{{ location.name }}</td>
+                <td>{{ location.address }}</td>
+                <td>{{ location.EBikeCount }}</td>
+                <td>{{ location.EScooterCount }}</td>
+                <td>{{ location.VehicleCount }}</td>
+                <td><a href="#" onclick="rentVehicle({{ location.id }})">Rent vehicle</a></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <div>
+        <div class="overlay" id="overlay"></div>
+        <div class="popup" id="popup_return">
+            <label for="Balance">Balance:</label>{{ user.balance|floatformat:2 }}<br>
+            <form method="POST" action="/customer/return_vehicle">
+                <input type="hidden" name="csrfmiddlewaretoken" value={{ csrf_token }}>
+                <input type="hidden" name="vehicleId" id="vehicleId" value="">
+                <input type="hidden" name="energy" id="energy" value="">
+                <label for="move_to">Return it to:
+                    <select id="move_to" name="move_to"></select>
+                </label>
+                <br><br>
+                <button type="submit">Submit</button>
+            </form>
+            <br>
+            <button id="closebtn" onclick="Closebtn()">Close</button>
+        </div>
+        <div class="popup" id="popup_report">
+            <form id="report-problem-form" method="POST" action="/customer/report_problem">
+                <input type="hidden" name="csrfmiddlewaretoken" value={{ csrf_token }}>
+
+                <div>
+                    <label for="customer">CustomerID:</label>
+                    <input type="text" name="customer" id="customer" value="{{ user.id }}" readonly>
+                </div>
+
+                <div>
+                    <label for="vehicle">VehicleID:</label>
+                    <input type="text" name="vehicle" id="vehicle" value="" readonly>
+                </div>
+
+                <div>
+                    <label for="malfunctionType">Malfunction Type:</label>
+                    <select name="malfunctionType" id="malfunctionType" required>
+                        <option value="ER1">Motor</option>
+                        <option value="ER2">Battery</option>
+                        <option value="ER3">Electronics</option>
+                        <option value="ER4">Cosmetic</option>
+                        <option value="ER5">Brakes</option>
+                        <option value="ER6">Direction</option>
+                        <option value="ER7">Other</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="description">Description:</label>
+                    <textarea name="description" id="description" cols="30" rows="10"></textarea>
+                </div>
+                <button type="submit">Submit</button>
+            </form>
+            <br>
+            <button id="closebtn" onclick="Closebtn()">Close</button>
+        </div>
+    </div>
+
+
+{% endblock %}

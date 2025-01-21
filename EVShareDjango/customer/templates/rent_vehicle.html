@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Show Vehicle{% endblock %}
+
+{% block head %}
+    <style>
+        /* 添加背景样式 */
+        body {
+            background-image: url('{% static "image/back.jpg" %}'); /* 背景图片 */
+            background-size: cover; /* 背景图片覆盖整个区域 */
+            background-position: center; /* 背景居中 */
+            background-repeat: no-repeat; /* 不重复背景图片 */
+        }
+    </style>
+    <link rel="stylesheet" href="{% static 'css/formPopovers.css' %}">
+{% endblock %}
+
+
+{% block main %}
+    <h3>Rent Vehicle</h3>
+
+    <table border="1" class="table table-striped-columns">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Type</th>
+            <th>Charge</th>
+            <th>Option</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for vehicle in vehicles %}
+            <tr>
+                <td>{{ vehicle.id }}</td>
+                <td>{{ vehicle.vehicleType }}</td>
+                <td>{{ vehicle.charge }}</td>
+                <td>
+                    {% if vehicle.needsRepair %}
+                        This vehicle is broken
+                    {% elif not vehicle.isParked %}
+                        This vehicle has been rented
+                    {% else %}
+                        <form action="/customer/rent_vehicle" method="post">
+                            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                            <input type="hidden" name="vehicleId" value="{{ vehicle.id }}"></input>
+                            <button type="submit">Rent</button>
+                        </form>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}

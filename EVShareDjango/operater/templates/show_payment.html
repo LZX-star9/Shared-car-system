@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block main %}
+<div class="container mt-4">
+
+    <h1 class="mb-4 text-center" style="color: #333;">PAYMENT LOGS</h1>
+
+    <form method="GET" class="mb-4">
+        <div class="input-group">
+            <input type="text" name="customer" class="form-control" placeholder="Search by Customer Name" value="{{ customer_username }}">
+            <input type="text" name="id" class="form-control" placeholder="Search by Customer ID" value="{{ id }}">
+            <button class="btn btn-primary" type="submit">Search</button>
+        </div>
+    </form>
+
+    <div class="semi-transparent-bg p-3 rounded" style="background-color: rgba(255,255,255,0.5);">
+    <table class="table table-bordered">
+        <thead class="thead-dark">
+            <tr style="background-color:rgba(176, 224, 230, 0.8);">
+                <th scope="col" style="background-color: #b0e0e6; color: white">#</th>
+                <th scope="col" style="background-color: #b0e0e6; color: white;">Customer ID</th>
+                <th scope="col" style="background-color: #b0e0e6; color: white;">Customer UserName</th>
+                <th scope="col" style="background-color: #b0e0e6; color: white;">Amount</th>
+                <th scope="col" style="background-color: #b0e0e6; color: white;">Payment Date</th>
+                <th scope="col" style="background-color: #b0e0e6; color: white;">Remark</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if payment_logs %}
+                {% for log in payment_logs %}
+                     <tr>
+                        <th scope="row">{{ forloop.counter }}</th>
+                        <td>{{ log.id }}</td>
+                        <td>{{ log.customer }}</td>
+                        <td>{{ log.amount }}</td>
+                        <td>{{ log.paymentDate }}</td>
+                     <td>{{ log.remark }}</td>
+                     </tr>
+                {% endfor %}
+            {% else %}
+            <tr>
+                <td colspan="6">
+                    {% if customer_username or id %}
+                        No payment logs found for the given search criteria.
+                    {% else %}
+                        No payment logs available.
+                    {% endif %}
+                </td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+
+    body {
+        background-image: url("{% static 'image/car5.jpg' %}") !important;
+        background-size: cover ;
+        background-position: center ;
+        background-attachment: fixed ;
+        margin: 0;
+    }
+
+    .semi-transparent-bg {
+        background-color: rgba(255, 255, 255, 0.7) !important;
+        padding: 20px;
+        border-radius: 8px;
+        position: relative;
+        z-index: 1;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .semi-transparent-bg table {
+        background-color: rgba(255, 255, 255, 0.6) !important;
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    .table th, .table td {
+        border: 1px solid rgba(0, 0, 0, 0.1) !important;
+        padding: 10px;
+    }
+
+    .thead-dark th {
+        background-color: rgba(176, 224, 230, 0.8) !important;
+        color: white ;
+    }
+    .container {
+        background: transparent !important;
+    }
+</style>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var semiTransparentBg = document.querySelector('.semi-transparent-bg');
+        if (semiTransparentBg) {
+            semiTransparentBg.style.backgroundColor = 'rgba(255, 255, 255, 0.7)';
+        }
+    });
+</script>
+{% endblock %}

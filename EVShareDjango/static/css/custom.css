@@ -1,0 +1,33 @@
+/* custom.css */
+
+.table thead th {
+    background-color: #A8E0D8;  /* 设置表头的背景颜色为薄荷色 */
+    color: #000;  /* 设置表头文字颜色为黑色 */
+}
+
+.table {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-image: url('/static/image/car1.jpg'); /* 替换为您的图片路径 */
+    background-size: cover; /* 使背景图覆盖整个页面 */
+    background-position: center; /* 背景图居中显示 */
+    background-repeat: no-repeat; /* 不重复背景图 */
+}
+
+.container {
+    max-width: 900px;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 20px;
+    border-radius: 8px;
+}
+
+h1 {
+    color: #333;
+}
+
+.navbar {
+    margin-bottom: 20px;
+}

@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+
+{% block title %}Show Vehicle{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{% static 'css/formPopovers.css' %}">
+    <script src="{% static 'js/vehicleButton.js' %}"></script>
+{% endblock %}
+
+
+{% block main %}
+    <h3>Vehicle in location: {{ locationId }} {{ locationName }}</h3>
+    <form action="/operater/show/vehicle" method="get">
+        <input name="locationId" type="hidden" value="{{locationId}}">
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" id="inlineCheckbox1" name="repair" value="1">
+            <label class="form-check-label" for="inlineCheckbox1">Need Repair</label>
+        </div>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" id="inlineCheckbox2" name="parked" value="1">
+            <label class="form-check-label" for="inlineCheckbox2">Parked</label>
+        </div>
+        <label for="order">Order Method:</label>
+        <select name="order" id="order">
+            <option value="id" selected>ID</option>
+            <option value="charge">Charge</option>
+        </select>
+        <button type="submit" class="btn btn-outline-primary">Search</button>
+    </form>
+
+    <table border="1" class="table table-striped-columns">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>charge</th>
+            <th>Type</th>
+            <th>Need Repair</th>
+            <th>Parked</th>
+            <th>Latitude</th>
+            <th>Longitude</th>
+            <th>Option</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for vehicle in vehicles %}
+            <tr>
+                <td>{{ vehicle.id }}</td>
+                <td>{{ vehicle.charge }}</td>
+                <td>{{ vehicle.vehicleType }}</td>
+                <td>{{ vehicle.needsRepair }}</td>
+                <td>{{ vehicle.isParked }}</td>
+                <td>{{ vehicle.vehicleLat }}</td>
+                <td>{{ vehicle.vehicleLong }}</td>
+                <td>
+                    <button id="openbtn_charge" onclick="openPopupCharge({{ vehicle.charge }},{{ vehicle.id }})">Charge</button>
+                    <button id="openbtn_repair" onclick="openPopupRepair({{ vehicle.id }})">Repair</button>
+                    <button id="openbtn_move" onclick="openPopupMove({{ vehicle.id }})">Move</button>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <div>
+        <div class="overlay" id="overlay"></div>
+        <div class="popup" id="popup_charge">
+            <form method="POST" action="/operater/vehicle/charge/">
+                <input type="hidden" name="csrfmiddlewaretoken" value={{ csrf_token }}>
+                <input type="hidden" name="locationId" value={{ locationId }}>
+                <label for="vehicleID">vehicleID:</label>
+                <input type="text" id="vehicleID" name="vehicleID" value="" readonly>
+                <br>
+                <label for="ChargeRange" class="form-label">Charge:</label>
+                <input type="range" class="form-range" value="10" min="0" max="100" step="1" id="ChargeRange" name="charge">
+                <br><br>
+                <button type="submit">Submit</button>
+            </form>
+            <br>
+            <button id="closebtn" onclick="Closebtn()">Close</button>
+        </div>
+        <div class="popup" id="popup_repair">
+            <form method="POST" action="/operater/vehicle/repair/">
+                <input type="hidden" name="csrfmiddlewaretoken" value={{ csrf_token }}>
+                <input type="hidden" name="locationId" value={{ locationId }}>
+
+                <div>
+                    <label for="reportedDate">Reported Date:</label>
+                    <input type="datetime-local" name="reportedDate" id="reportedDate" value="" readonly>
+                </div>
+
+                <div>
+                    <label for="malfunctionType">Malfunction Type:</label>
+                    <select name="malfunctionType" id="malfunctionType" required>
+                        <option value="ER1">Motor</option>
+                        <option value="ER2">Battery</option>
+                        <option value="ER3">Electronics</option>
+                        <option value="ER4">Cosmetic</option>
+                        <option value="ER5">Brakes</option>
+                        <option value="ER6">Direction</option>
+                        <option value="ER7">Other</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="customer">CustomerID:</label>
+                    <input type="text" name="customer" id="customer" value="" readonly>
+                </div>
+
+                <div>
+                    <label for="vehicle">VehicleID:</label>
+                    <input type="text" name="vehicle" id="vehicle" value="" readonly>
+                </div>
+
+                <div>
+                    <label for="description">Description:</label>
+                    <textarea name="description" id="description" cols="30" rows="10" readonly></textarea>
+                </div>
+
+                <div>
+                    <label for="operator">Operator:</label>
+                    <input type="text" name="operator" id="operator" value="">
+                </div>
+
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" role="switch" id="Fixed" name="Fixed">
+                    <label class="form-check-label" for="Fixed">Fixed</label>
+                </div>
+
+                <div>
+                    <label for="repairDate">Repair Date:</label>
+                    <input type="datetime-local" name="repairDate" id="repairDate">
+                </div>
+                <button type="submit">Submit</button>
+            </form>
+            <br>
+            <button id="closebtn" onclick="Closebtn()">Close</button>
+        </div>
+        <div class="popup" id="popup_move">
+            <form method="POST" action="/operater/vehicle/move/">
+                <input type="hidden" name="csrfmiddlewaretoken" value={{ csrf_token }}>
+                <input type="hidden" name="vehicleId" id="vehicleId" value="">
+                <label for="currentLocationId">Current Location Id：</label>
+                <input type="text" name="currentLocationId" id="currentLocationId" value="" readonly>
+                <br><br>
+                <label for="currentLocationName">Current Location Name：</label>
+                <input type="text" name="currentLocationName" id="currentLocationName" value="" readonly>
+                <br><br>
+                <label for="move_to">Move to:
+                    <select id="move_to" name="move_to"></select>
+                </label>
+                <br><br>
+
+                <button type="submit">Submit</button>
+            </form>
+        <br>
+        <button id="closebtn" onclick="Closebtn()">Close</button>
+        </div>
+    </div>
+{% endblock %}

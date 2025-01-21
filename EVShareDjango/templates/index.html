@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome to EVShare System</title>
+    <link rel="stylesheet" href="{% static 'bootstrap5/bootstrap.min.css' %}">
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <script src="{% static 'bootstrap5/bootstrap.min.js' %}"></script>
+    <script src="{% static 'jquery/jquery-3.7.1.min.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'css/base.css' %}"></link>
+</head>
+
+<body>
+<header class="p-3 text-bg-black border-bottom mb-3">
+    <div class="container">
+        <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
+            <a href="/" class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none">
+                <img src="{% static 'image/E.png' %}" width="30" height="30" alt="">
+            </a>
+            {% if user.userType == 'OP' %}
+                <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
+                    <li><a href="{% url "index" %}" class="nav-link px-2 text-light">HOME</a></li>
+                    <li><a href="{% url 'operater:show_location' %}" class="nav-link px-2 text-light">LOCATION</a></li>
+                    <li><a href="{% url 'operater:add_location' %}" class="nav-link px-2 text-light">ADD LOCATION</a></li>
+                    <li><a href="{% url 'operater:show_rent_logs' %}" class="nav-link px-2 text-light">RENT LOG</a></li>
+                    <li><a href="{% url 'operater:show_repairlogs' %}" class="nav-link px-2 text-light">REPAIR LOG</a></li>
+                    <li><a href="{% url 'operater:show_payment' %}" class="nav-link px-2 text-light">PAYMENT LOG</a></li>
+                </ul>
+            {% elif user.userType == 'MN' %}
+                <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
+                    <li><a href="{% url "index" %}" class="nav-link px-2 text-light">HOME</a></li>
+                    <li><a href="/manager/show/reports" class="nav-link px-2 text-light">REPORTS</a></li>
+                </ul>
+            {% else %}
+                <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
+                    <li><a href="{% url "index" %}" class="nav-link px-2 text-light">HOME</a></li>
+                    <li><a href="{% url "customer:index" %}" class="nav-link px-2 text-light">Rent Vehicle</a></li>
+                </ul>
+            {% endif %}
+            <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3" role="search">
+                <input type="search" class="form-control " placeholder="Search..." aria-label="Search">
+            </form>
+
+            {% if user.is_authenticated %}
+                <div class="flex-shrink-0 dropdown">
+                    <a href="#" class="d-block link-body-emphasis text-decoration-none dropdown-toggle"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        {% if user.image %}
+                            <img src="{{ user.image.url }}" alt="mdo" width="32" height="32" class="rounded-circle">
+                        {% else %}
+                            <img src="{% static '/image/default_avatar.png' %}" alt="mdo" width="32" height="32"
+                                 class="rounded-circle">
+                        {% endif %}
+                    </a>
+                    <ul class="dropdown-menu text-small shadow">
+                        <li><a class="dropdown-item" href="{% url 'login:profile' %}">Profile</a></li>
+                        <li><a class="dropdown-item" href="{% url 'system:process_payment' %}?order_type=recharge">Recharge</a>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item" href="{% url 'login:logout' %}">Sign out</a></li>
+                    </ul>
+                </div>
+            {% else %}
+                <div class="text-end">
+                    <a class="btn btn-outline-light me-2" href="{% url 'login:login' %}">Login</a>
+                    <a class="btn btn-primary" href="{% url 'login:register' %}">Sign-up</a>
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+</header>
+<main>
+    <div id="myCarousel" class="carousel slide mb-6" data-bs-ride="carousel">
+        <div class="carousel-indicators">
+            <button type="button" data-bs-target="#myCarousel" data-bs-slide-to="0" class="active"
+                    aria-label="Slide 1" aria-current="true"></button>
+            <button type="button" data-bs-target="#myCarousel" data-bs-slide-to="1" aria-label="Slide 2"
+                    class=""></button>
+            <button type="button" data-bs-target="#myCarousel" data-bs-slide-to="2" aria-label="Slide 3"
+                    class=""></button>
+        </div>
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <svg class="bd-placeholder-img" width="100%" height="400px" xmlns="http://www.w3.org/2000/svg"
+                     aria-hidden="true" preserveAspectRatio="xMidYMid slice" focusable="false">
+                    <defs>
+                        <image id="myImage" href="{% static 'image/scooter1.jpg' %}" width="100%" height="400px"
+                               preserveAspectRatio="xMidYMid slice"/>
+                    </defs>
+                    <rect width="100%" height="100%" fill="var(--bs-secondary-color)"></rect>
+                    <use href="#myImage"/>
+                </svg>
+                <div class="container">
+                    <div class="carousel-caption text-start">
+                        <h1>Full-process safety guarantee.</h1>
+                        <p class="opacity-75">Set off freely</p>
+                        <p><a class="btn btn-lg btn-primary" href="#">Sign up today</a></p>
+                    </div>
+                </div>
+            </div>
+            <div class="carousel-item">
+                <svg class="bd-placeholder-img" width="100%" height="400px" xmlns="http://www.w3.org/2000/svg"
+                     aria-hidden="true" preserveAspectRatio="xMidYMid slice" focusable="false">
+                    <defs>
+                        <image id="myImage1" href="{% static 'image/scooter2.jpg' %}" width="100%" height="400px"
+                               preserveAspectRatio="xMidYMid slice"/>
+                    </defs>
+                    <rect width="100%" height="100%" fill="var(--bs-secondary-color)"></rect>
+                    <use href="#myImage1"/>
+                </svg>
+                <div class="container">
+                    <div class="carousel-caption">
+                        <h1>Support self-service vehicle pick-up and replacement.</h1>
+                        <p>Set off freely.</p>
+                        <p><a class="btn btn-lg btn-primary" href="#">Learn more</a></p>
+                    </div>
+                </div>
+            </div>
+            <div class="carousel-item">
+                <svg class="bd-placeholder-img" width="100%" height="400px" xmlns="http://www.w3.org/2000/svg"
+                     aria-hidden="true" preserveAspectRatio="xMidYMid slice" focusable="false">
+                    <defs>
+                        <image id="myImage2" href="{% static 'image/bike.jpg' %}" width="100%" height="400px"
+                               preserveAspectRatio="xMidYMid slice"/>
+                    </defs>
+                    <rect width="100%" height="100%" fill="var(--bs-secondary-color)"></rect>
+                    <use href="#myImage2"/>
+                </svg>
+                <div class="container">
+                    <div class="carousel-caption text-end">
+                        <h1>Provide you with vehicle usage assistance throughout the whole process.</h1>
+                        <p>Set off freely.</p>
+                        <p><a class="btn btn-lg btn-primary" href="#">Browse gallery</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#myCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#myCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+
+
+    <!-- Marketing messaging and featurettes
+    ================================================== -->
+    <!-- Wrap the rest of the page in another container to center all the content. -->
+    <div class="pricing-header p-3 pb-md-4 mx-auto text-center">
+        <h1 class="display-4 fw-normal text-body-emphasis">Pricing</h1>
+        <p class="fs-5 text-body-secondary">You can choose the appropriate package to use the EVShare system</p>
+    </div>
+    <div class="container marketing">
+
+        <div class="row row-cols-1 row-cols-md-3 mb-3 text-center">
+            <div class="col">
+                <div class="card mb-4 rounded-3 shadow-sm">
+                    <div class="card-header py-3">
+                        <h4 class="my-0 fw-normal">Free</h4>
+                    </div>
+                    <div class="card-body">
+                        <h1 class="card-title pricing-card-title">£0<small
+                                class="text-body-secondary fw-light">/mo</small></h1>
+                        <ul class="list-unstyled mt-3 mb-4">
+                            <li>Limit the right to use the type of transportation</li>
+                            <li>View the site information</li>
+                            <li>Rent vehicle for some fee</li>
+                            <li>Help center access</li>
+                        </ul>
+                        <a type="button" class="w-100 btn btn-lg btn-outline-primary" href="{% url 'login:register' %}">Sign
+                            up for free</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card mb-4 rounded-3 shadow-sm">
+                    <div class="card-header py-3">
+                        <h4 class="my-0 fw-normal">Plus Month Card</h4>
+                    </div>
+                    <div class="card-body">
+                        <h1 class="card-title pricing-card-title">£10<small
+                                class="text-body-secondary fw-light">/mo</small></h1>
+                        <ul class="list-unstyled mt-3 mb-4">
+                            <li>User Ebike and EScooter for free</li>
+                            <li>Including all the right of free user</li>
+                        </ul>
+                        <a href="{% url 'system:process_payment' %}?order_type=card1" type="button"
+                           class="w-100 btn btn-lg btn-primary">Pay for this</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card mb-4 rounded-3 shadow-sm border-primary">
+                    <div class="card-header py-3 text-bg-primary border-primary">
+                        <h4 class="my-0 fw-normal">Super Plus Month Card</h4>
+                    </div>
+                    <div class="card-body">
+                        <h1 class="card-title pricing-card-title">£15<small
+                                class="text-body-secondary fw-light">/mo</small></h1>
+                        <ul class="list-unstyled mt-3 mb-4">
+                            <li>Rent all type of vehicle for free</li>
+                            <li>Can rent two vehicle at ones</li>
+                            <li>Phone and email support</li>
+                            <li>Including all the right of plus user</li>
+                        </ul>
+                        <a href="{% url 'system:process_payment' %}?order_type=card2" type="button"
+                           class="w-100 btn btn-lg btn-primary">Pay for this</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- START THE FEATURETTES -->
+        <div class="container marketing" style="background-image: url('{% static 'image/show4.jpg' %}');
+                background-size: cover;
+                background-position: center;
+                position: relative;
+                background-blend-mode: lighten;
+                background-color: rgba(255, 255, 255, 0.4);">
+            <hr class="featurette-divider">
+
+            <div class="row featurette">
+                <div class="col-md-7">
+                    <h2 class="featurette-heading fw-normal lh-1" style="color: #003366;">Self-driving trips & daily
+                        commuting. <span
+                                class="text-body-secondary">Every stage is worth leaving beautiful moments.</span></h2>
+                    <p class="lead">No more crowding during commuting. Renting a car is more cost-effective and makes
+                        your
+                        commute more relaxed. Unlimited mileage. Support for vehicle return in different places. Wish
+                        you
+                        can explore every corner.</p>
+                </div>
+                <div class="col-md-5">
+                    <img src="{% static 'image/scooter3.jpg' %}" alt="Description of the image"
+                         class="featurette-image img-fluid mx-auto" width="300" height="300"/>
+                </div>
+            </div>
+
+            <hr class="featurette-divider">
+
+            <div class="row featurette">
+                <div class="col-md-7 order-md-2">
+                    <h2 class="featurette-heading fw-normal lh-1" style="color: #003366;">Parent-child outings &
+                        visiting relatives and friends. <span
+                                class="text-body-secondary"></span></h2>
+                    <p class="lead">Multiple large-space vehicle models satisfy your wish to go on a self-driving trip
+                        with
+                        your children and parents. Enjoy every moment of companionship. When visiting home or gathering
+                        with friends, the rich variety of vehicle models provides you with the best choice and makes
+                        your
+                        travel more free.</p>
+                </div>
+                <div class="col-md-5 order-md-1">
+                    <img src="{% static 'image/scooter4.jpg' %}" alt="Description of the image"
+                         class="featurette-image img-fluid mx-auto" width="300" height="300"/>
+                </div>
+            </div>
+
+            <hr class="featurette-divider">
+
+            <div class="row featurette">
+                <div class="col-md-7">
+                    <h2 class="featurette-heading fw-normal lh-1" style="color: #003366;">Fine-grained operation. <span
+                            class="text-body-secondary"></span></h2>
+                    <p class="lead">AI intelligent scheduling, fixed-point parking technology, grid management,
+                        ergonomic
+                        design.</p>
+                </div>
+                <div class="col-md-5">
+                    <img src="{% static 'image/bike2.jpg' %}" alt="Description of the image"
+                         class="featurette-image img-fluid mx-auto" width="300" height="300"/>
+                </div>
+            </div>
+
+            <hr class="featurette-divider">
+
+            <!-- /END THE FEATURETTES -->
+        </div><!-- /.container -->
+    </div><!-- /.container -->
+
+
+    <!-- FOOTER -->
+    <footer class="container">
+        <p class="float-end"><a href="#">Back to top</a></p>
+        <p>© 2024 Development by Lab 2 Team 9. · <a href="#">Privacy</a> · <a href="#">Terms</a></p>
+    </footer>
+</main>
+</body>
+</html>
+

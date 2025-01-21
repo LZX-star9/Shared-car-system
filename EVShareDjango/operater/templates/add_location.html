@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Location{% endblock %}
+
+{% block head %}
+    <style>
+        /* 添加背景样式 */
+        body {
+            background-image: url('{% static "image/back.jpg" %}'); /* 背景图片 */
+            background-size: cover; /* 背景图片覆盖整个区域 */
+            background-position: center; /* 背景居中 */
+            background-repeat: no-repeat; /* 不重复背景图片 */
+        }
+
+        button {
+            background-color: #2eaee2; /* 设置按钮背景颜色为藏青色 */
+            color: white; /* 设置按钮文字颜色为白色 */
+            border: none; /* 去掉按钮边框 */
+            padding: 10px 15px; /* 设置按钮内边距 */
+            border-radius: 5px; /* 设置按钮圆角 */
+            cursor: pointer; /* 鼠标悬停时显示为手指 */
+            font-size: 18px; /* 增大按钮字体大小 */
+            transition: background-color 0.3s; /* 添加背景颜色过渡效果 */
+        }
+    </style>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBqiVu0q8eThnZgTMriejFL9Qj1T1hgALI&callback=initMap"
+            async defer></script>
+    <script>
+        let map;
+        let marker;
+        let selectedMarker;
+        const locations = {{ locations|safe }};
+
+        function initMap() {
+            const glasgow = {lat: 55.8642, lng: -4.2518}; // Glasgow 默认位置
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: glasgow,
+                zoom: 14,
+            });
+
+            locations.forEach(location => {
+                const position = {lat: location.latitude, lng: location.longitude};
+                const marker = new google.maps.Marker({
+                    position: position,
+                    map: map,
+                    title: location.name,
+                });
+
+                // 点击标记显示位置信息
+                const infoWindow = new google.maps.InfoWindow({
+                    content: `<h4>${location.name}</h4><p>${location.address}</p>VehicleCount:<p>${location.VehicleCount}</p>`,
+                });
+
+                marker.addListener("click", () => {
+                    infoWindow.open(map, marker);
+                });
+            });
+
+
+            // 添加点击事件
+            map.addListener("click", (event) => {
+                placeMarker(event.latLng);
+            });
+        }
+
+        function placeMarker(location) {
+            // 如果已有标记，则移动标记
+            if (marker) {
+                marker.setPosition(location);
+            } else {
+                marker = new google.maps.Marker({
+                    position: location,
+                    map: map,
+                });
+            }
+
+            // 将位置信息发送到后端
+            sendLocation(location.lat(), location.lng());
+        }
+
+        function sendLocation(latitude, longitude) {
+            document.getElementById('locationLat').value = latitude;
+            document.getElementById('locationLong').value = longitude;
+        }
+
+    </script>
+
+{% endblock %}
+
+
+{% block main %}
+    <form action="/operater/add/location" method="POST">
+        {% csrf_token %}
+        <div>
+            <label for="locationName">Location Name:</label>
+            <input type="text" id="locationName" name="locationName" maxlength="50" required>
+        </div>
+        <br>
+        <div>
+            <label for="locationAddress">Location Address:</label>
+            <input type="text" id="locationAddress" name="locationAddress" maxlength="100" required>
+        </div>
+        <br>
+        <div id="map" style="width: 800px; height: 400px;"></div>
+        <br>
+        <div>
+            <label for="locationLat">Latitude:</label>
+            <input type="text" id="locationLat" name="locationLat" required pattern="[-+]?[0-9]*\.?[0-9]+"
+                   title="Please enter a valid latitude" readonly>
+        </div>
+        <br>
+        <div>
+            <label for="locationLong">Longitude:</label>
+            <input type="text" id="locationLong" name="locationLong" required pattern="[-+]?[0-9]*\.?[0-9]+"
+                   title="Please enter a valid longitude" readonly>
+        </div>
+        <br>
+        <button type="submit">Save Location</button>
+    </form>
+
+{% endblock %}

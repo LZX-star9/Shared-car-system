@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>表单弹窗</title>
+    <link rel="stylesheet" href="{% static 'bootstrap5/bootstrap.min.css' %}">
+    {#    <script src="{% static 'bootstrap5/popper.min.js' %}"></script>#}
+    <script src="{% static 'bootstrap5/bootstrap.min.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'css/base.css' %}"></link>
+{#        <link rel="stylesheet" href="{% static 'css/formPopovers.css' %}">#}
+    <style>
+        /* 遮罩层样式 */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none; /* 默认隐藏 */
+        }
+
+        /* 弹窗样式 */
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            display: none; /* 默认隐藏 */
+        }
+
+        label {
+            width: 100px;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"], select {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            color: #555;
+        }
+
+        select option {
+            color: #555;
+        }
+
+        button {
+            padding: 5px 10px;
+            border-radius: 3px;
+            border: none;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0069d9;
+        }
+
+    </style>
+</head>
+<body>
+<button id="openbtn_charge" onclick="chargeVehicle({{ location.id }})">Charge</button>
+<button id="openbtn_repair">Repair</button>
+<button id="openbtn_move">Move</button>
+<div>
+<div class="overlay" id="overlay"></div>
+<div class="popup" id="popup_charge">
+    <form>
+        <label for="customRange" class="form-label">Charge</label>
+        <input type="range" class="form-range" value="10" min="0" max="100" step="0.1" id="customRange">
+        <br><br>
+        <button id="closebtn()">Close</button>
+        <button type="submit">Submit</button>
+    </form>
+</div>
+<div class="popup" id="popup_repair">
+    <form>
+        {% csrf_token %}
+        <div>
+            <label for="malfunctionType">Malfunction Type:</label>
+            <select name="malfunctionType" id="malfunctionType" required>
+                <option value="ER1">Motor</option>
+                <option value="ER2">Battery</option>
+                <option value="ER3">Electronics</option>
+                <option value="ER4">Cosmetic</option>
+                <option value="ER5">Brakes</option>
+                <option value="ER6">Direction</option>
+                <option value="ER7">Other</option>
+            </select>
+        </div>
+
+        <div>
+            <label for="customer">Customer:</label>
+            <label id="customer">{{ RepairLog.customer }}</label>
+        </div>
+
+        <div>
+            <label for="vehicle">Vehicle:</label>
+            <label id="vehicle">{{ RepairLog.vehicle }}</label>
+        </div>
+
+        <div>
+            <label for="description">Description:</label>
+            <textarea name="description" id="description" cols="30" rows="10">{{ RepairLog.description }}</textarea>
+        </div>
+
+        <div>
+            <label for="operator">Operator:</label>
+            <input type="text" name="operator" id="operator" value="{{ RepairLog.operator }}"></input>
+        </div>
+
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault">
+            <label class="form-check-label" for="flexSwitchCheckDefault">Fixed</label>
+        </div>
+
+        <div>
+            <label for="repairDate">Repair Date:</label>
+            <input type="datetime-local" name="repairDate" id="repairDate">
+        </div>
+        <button id="closebtn()">关闭</button>
+        <button type="submit">Submit</button>
+    </form>
+</div>
+<div class="popup" id="popup_move">
+    <form>
+        <label>
+            Current Location：
+        </label>
+        <label>{{ vehicle.location.name }}</label><br><br>
+        <label>Move to:
+        <select>
+            {% for location in locations %}
+            <option>{{ location.name }}</option>
+            {% endfor %}
+        </select></label>
+        <br><br>
+        <button id="closebtn()">关闭</button>
+        <button type="submit">提交</button>
+    </form>
+</div>
+</div>
+<script>
+    const openbtn_charge = document.getElementById('openbtn_charge');
+    const openbtn_repair = document.getElementById('openbtn_repair');
+    const openbtn_move = document.getElementById('openbtn_move');
+    const closebtn = document.getElementById('closebtn');
+    const popup_charge = document.getElementById('popup_charge');
+    const popup_repair = document.getElementById('popup_repair');
+    const popup_move = document.getElementById('popup_move');
+    const overlay = document.getElementById('overlay');
+    openbtn_charge.addEventListener('click', function () {
+        popup_charge.style.display = 'block';
+        overlay.style.display = 'block';
+        fetch('operater/vehicle/charge/',{
+            method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: {},
+            }).then(response => response.json())
+            .then(data => {
+                console.log('Location saved:', data);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+
+    })
+    openbtn_repair.addEventListener('click', function () {
+        popup_repair.style.display = 'block';
+        overlay.style.display = 'block';
+    })
+    openbtn_move.addEventListener('click', function () {
+        popup_move.style.display = 'block';
+        overlay.style.display = 'block';
+    })
+</script>
+</body>
+</html>
