@@ -1,3 +1,3 @@
 # Ignore ECharts library from language statistics
-/static/js/echarts.js linguist-vendored
-/static/js/echarts.min.js linguist-vendored
+/EVShareDjango/static/js/echarts.js linguist-vendored
+/EVShareDjango/static/js/echarts.min.js linguist-vendored
